@@ -1,0 +1,362 @@
+Backbone is a great javascript framework to develop client-side browser applications, along with quite a large user community and support libraries, the development of complex applications Javascript is not too difficult.
+Can refer http://backbonejs.org/ and http://addyosmani.github.io/backbone-fundamentals/ backbone to better understand and build applications on the backbone
+After initially built applications and functions, the key is to write test cases for functionality made for errors, ensuring that we run good and stable dinh.Vay how to test applications Its backbone? Unfortunately the backbone does not support or take on the functions required for the test, so we must use the javascript test framework and support existing library to test the app backbone.
+This article demonstrates how to test backbone applications, and javascript app in general.
+First thing: we need the library What?
+Currently there are many users to test the application framework javascript, eg QUnit, Jasmine, Buster ..., each framework has its own strength, the selection of the best framework is difficult.
+So special criteria when choosing is simple, fast and easy hieu.Mot notably framework Mocha
+Mocha is a feature-rich JavaScript test framework running on Node.js and the browser, making asynchronous testing simple and fun.
+Mocha is suitable for both test application client and server-based javascript nodejs.
+Mocha support any assertion public libraries, special libraries are or should.js
+There are all kinds of style following assertion: assert, expect, and shouldnt. They are almost the same, kind of this style can be easily transferred to other styles, it is important to use that kind of style dang.Should readable style is kind most readable, should.js the style library support this assertion
+An example to show the difference of the type of assertion of this style:
+to check the simple code:
+ var a = true; 
+Assert style:
+ assert (a, true, "a nên true"); 
+Expect style:
+ expect (a) .to.equal (true); 
+Should style:
+ a.should.to.be.true; 
+In the course of the test will be times when we want to check if a function is called or not a certain function or mockup there is great support 1 tool we test such cases is sinon.js
+Sinon has the spy concept, stub and mock
+1 spy was first recorded function parameters, return values ​​... related to the function calls
+for example, in our program that uses variable capacitance 1 1 Backbone.Model model, one function that you want to change the attributes of this model and then call to save to save the model that we database.Khi I want to test whether the model can save function is called or not, can be used to test spy as follows:
+ var spy_func = sinon.spy (model, "save");  // Save function of the model spy
+ //perform functions
+ spy_func.should.be.calledOnce;  // Check that model.save function () was called and only one single call
+ spy_func.restore ();  // Retore to save or erase spy function wrapper 
+1 stub is like one spy, but instead merely record the parameter or function calls, it will be replaced under the wrap function, or change the operation of the function by a certain return value desire
+For example, like in the spy case, but we do not want data to be saved to the database (for one reason or another), I just want to check if the function has been called to save or not, we will use the stub at school this case, as follows:
+ var stub_func = sinon.stub (model, "save");
+ stub_func.should.be.called;  // Check that the save function was called
+ stub_func.restore ();  // Restore the function model.save () to its normal operation 
+Mock is a combination spy on one object and stub
+Also false Sinon can return value to the client server
+For additional information, visit http://sinonjs.org/docs/
+Next to the test environment or test runner:
+We will use Test'em
+Test'em is a handy collection of scripts to set up and run a continuous test environment.
+Next: install the necessary software
+
+
+Nodejs:
+ sudo apt-get install python-software-properties python g ++ make
+ sudo add-apt-repository ppa: chris-lea / Node.js
+ sudo apt-get update
+ sudo apt-get install nodejs 
+test'em + mocha
+ npm install -g mocha testem 
+Finally: demo program
+With the demo, then we should test one simple program, but also need to include the common aspects in the app backbone
+Accordingly we use todo app download at https://github.com/tastejs/todomvc/tree/gh-pages/dependency-examples/backbone_require
+to make programs and perform test and writing test code for that app
+Todo app program
+Construction on the backbone
+Using modular library requirejs http://requirejs.org/
+Save data to localStorage (similar save to database)
+Using these functions, components commonly found in 1 app backbone, including: Model, Collection, View, Router
+Interface at runtime:
+
+Aspects to test:
+Test the functionality of the Model
+Test the functionality of Collection
+Test functions in View
+The demo can be downloaded from here
+The source code is located in the folder test src_test
+In the article will cover the main aspects common to test
+Suppose the source code in the folder TODO_TEST
+config:
+In TODO_TEST files / config testem testem.json contains, is up before running the test
+ {
+   "Frameworks", "mocha"
+   "Test_page": "testem.html"
+   "Src_files": [
+     "Src_test / *. Js"
+   ]
+ } 
+include:
+framework to use, here is mocha
+test_page: init page, the test run will use this file as bait
+src_test: files containing the test case
+Init testem.html page:
+ <! Doctype html>
+ <Html>
+ <Head>
+ <Title> Test'em </ title>
+ <Link rel = "stylesheet" href = "/ testem / mocha.css">
+ <Script src = "/ testem / mocha.js"> </ script>
+ <Script src = "/ testem.js"> </ script>
+ <Script> mocha.setup ( 'BDD') </ script>
+ <Script src = "/ vendor / require.js" data-main = "main_test.js"> </ script>
+ </ Head>
+ <Body>
+ <Div id = "mocha"> </ div>
+ <Div id = "appview" style = "display: none">
+         <Section id = "todoapp">
+             <Header id = "header">
+                 <H1> todos </ h1>
+                 <Input id = "new-todo" placeholder = "What needs to be done?"  autofocus>
+             </ Header>
+             <Section id = "main">
+                 <Input id = "toggle-all" type = "checkbox">
+                 <Label for = "toggle-all"> Mark all as complete </ label>
+                 <Ul id = "todo-list"> </ ul>
+             </ Section>
+             <Footer id = "footer"> </ footer>
+         </ Section>
+         <Footer id = "info">
+             <P> Double-click to edit a todo </ p>
+             <P> Written by <a href="http://addyosmani.github.com/todomvc/"> Addy Osmani </a> </ p>
+             <P> Part of <a href="http://todomvc.com"> TodoMVC </a> </ p>
+         </ Footer>
+ </ Div>
+ </ Body>
+ </ Html> 
+The key points:
+Include js files needed to operate mocha and testem
+Html markup <div id = "appview">, this is part of the main view content copied from TODO_TEST / index.html. This section is needed to test the view and the action on the view
+<script src = "/ vendor / require.js" data-main = "main_test.js"> </ script>, as well as any app that uses requirejs, we all need one bait js files of the program, in writing test code, too, we need one file to initialize the object priming necessary and run the test
+2. File bait main_test.js:
+ require.config ({baseUrl: './ js /', urlArgs: "v =" + (new Date ()). getTime (), shim: {underscore: {exports: '_'}, backbone: {DEPS: [ 'underscore', 'jquery'], exports: 'Backbone'}, backboneLocalstorage: {DEPS: [ 'backbone'], exports: 'Store'}, sendkey: {DEPS: [ 'jquery', 'bililiterange'], exports: 'sendkey'}, bililiterange: {exports: 'bililiterange'}}, paths: {jquery: '../bower_components/jquery/jquery' underscore '../bower_components/underscore/underscore' backbone ' ../bower_components/backbone/backbone ', backboneLocalstorage:' ../bower_components/backbone.localStorage/backbone.localStorage ', text:' ../bower_components/requirejs-text/text ', sendkey:' ../ .. /jquery.sendkeys', bililiterange: '../../bililiteRange'}});  AppTest = {};  AppTest.baseUrl = '.. /';  AppTest.testSrc = AppTest.baseUrl + 'src_test /';  requireFiles var = [AppTest.baseUrl + 'vendor / bottle', AppTest.baseUrl + 'vendor / Sinon', AppTest.baseUrl + 'vendor / Sinon-bottle', AppTest.testSrc + 'model_test', AppTest.testSrc + 'collection_test', AppTest.testSrc + 'view_test'];  // Require libraries require (requireFiles, function (bottles, Sinon, sinonChai) {// Bottle assert = chai.assert; shouldnt = chai.should (); chai.use (sinonChai); console.log (Sinon); // Mocha mocha.setup ( 'BDD'); // require base before starting tests require ([], function () {// Start runner mocha.run ();});}); 
+The key points:
++ Config folder js baseUrl pointing to.
+Why should I? Default is pointing to the folder in which the file baseUrl bait (here is main_test.js standing), if left like that, then the program's source files todo app (located in the js folder) will include the wrong path (because the prey of todo file app is js / main.js whereby only to se baseUrl js folder) .Therefore need to config and test the app's baseUrl same
+The rest of the config file is copied from TODO_TEST / js / main.js through (sometimes more) .Phan this config requirejs necessary to recognize the path to the library
+Require all needed testing library files and initialize them, and require all source files containing the test case to mocha run through every test case in each file. Here the source file to the folder containing the test case src_test, including:
+model_test.js: todo test model
+collection_test.js: todo test collection
+view_test.js: test portion of the program view
++ Finally called mocha.run (), start the test case execution
+3. Test the model:
+Todo TODO_TEST model is defined in the / js / models / todo.js
+Todo models have the following functions:
+ // Toggle the state of this completed` `todo items.
+ toggle: function () {
+     this.save ({
+         completed:! this.get ( 'completed')
+     });
+ } 
+ie will toggle toggle attribute completed the call, and then save the database.
+Want to test this function, you first save the problem is content, because the database is not defined here, if known se error, but we need to know to see if there are changes attribute completed correctly, so they may need to use the jaws of Sinon
+I will test this function as follows:
+ it ( "should change completed flag to true method is gọi toggle khi", function () {
+     this.todo.get ( 'completed'). should.be.false;
+            
+     // Stub the method compared todo.sync Actually not save to storage data
+     var sync_stub = sinon.stub (this.todo, 'sync');
+        
+     this.todo.toggle ();
+            
+     sync_stub.should.be.called;
+            
+     this.todo.get ( 'completed'). should.be.true;
+            
+     sync_stub.restore ();
+ }) 
+it () here defined first test case, it first passed this test case mesage describes what to do, and to test the main function. In this function we met this.todo, the variables are defined in:
+ beforeEach (function () {
+     TodoModel this.todo = new ();
+ }) 
+beforeEach the function is executed before each test case, go with it, there afterEach There are also the before (), the function is executed only one time before all of the first test cases test suite.
+Test suites are defined as follows:
+ describe ( 'Todo Model', function () {
+     // Test case 
+ }); 
+in each test suite contains multiple test cases, and also the function of test suites
+Turning to the test case above, we in turn make:
+Check completed = false
+sync stub function of the model todo, this important step, the function will save the model todo sync function call to save data to storage, so we sub this method aimed not to data stored xuong.Tai why not sub save function? Because the save function will change the attribute completed, we want to examine data changes should sub sync function is most reasonable
+Toggle function call
+Check that the sync function is called, if the sync was called ie save is called
+Check completed has been transformed into true
+restore the sync function
+The key problem was explained, view the source for more information.
+4. Test collection:
+Todo TODO_TEST collection is defined in the / js / collections / todos.js
+In Todo collection can override 1 of backbone function is:
+ comparator: function (todo) {
+     todo.get return ( 'order');
+ } 
+This function is used for purposes that sort of model in the collection in order to be taken from the property of each model.Chung order we write test cases to test this function as follows:
+ it ( "the order of models in the collection nên right", function () {
+     var datas = [
+         {
+                 id: 1,
+                 completed: false,
+                 order: 5
+         },
+         {
+                 id: 2,
+                 completed: true,
+                 order: 4
+         },
+         {
+                 id: 3,
+                 completed: false,
+                 order: 3
+         },
+         {
+                 id: 4,
+                 completed: true,
+                 order: 2
+         },
+         {
+                 id: 5,
+                 completed: false,
+                 order: 1
+         }               
+     ];
+    
+     this.collection.reset (datas);
+     var = this.collection.models models;
+     models [0] .get ( 'id'). should.to.be.equal (5);
+     models [1] .get ( 'id'). should.to.be.equal (4);
+     models [2] .get ( 'id'). should.to.be.equal (3);
+     models [3] .get ( 'id'). should.to.be.equal (2);
+     models [4] .get ( 'id'). should.to.be.equal (1);
+ }) 
+We insert data into the collection in reverse order of the order, and then check the correct order to reverse
+The tirade 1 part of the source code examples, see the source for more information.
+5. Test view:
+Test view is very important and also more trouble, because the test to test the DOM element and communicate with people.
+To perform the test section view, we must use the function of jquery, created and implemented to test the hidden view.
+The view of the Todo app TODO_TEST defined in the / js / views. Todo view item 2 is the first view is the view todo model, defined in todos.js and App view is the view to the entire app in app.js
+With a view todo item, the output will render a checkbox to toggle 1 will change the status completed, part of the title official label model, we will test this part render as follows:
+TodoView must first create, model and render the view section, we will take into beforeEach:
+ beforeEach (function () {
+         TodoModel this.todoItem = new ({ 'title': 'test item'});
+                
+         this.todoItemView = new TodoView ({model: this.todoItem});
+                
+         this.todoItemView.render ();
+ }) 
+after rendering the this.todoItemView. $ el will contain the DOM's view
+We create test cases to check the label title:
+ it ( "should have the label of title", function () {              
+         this.todoItemView. $ el.find ( 'label'). should.have.length (1);
+ }) 
+here we use the find function to search jquery $ el label on the view and test it using should.have.length present (1)
+Test test case checkbox:
+ it ( "should toggle checkbox present", function () {
+         this.todoItemView. $ el.find ( '. toggle'). should.have.length (1);
+         this.todoItemView. $ el.find ( '. toggle'). is ( ': checked'). should.be.false;
+ }) 
+external test also checks its presence is not checked
+When users toggle checkbox completed, the properties of the model must be set to true, we check this:
+ it ( "todo's completed khi thay nên toggled attribute checkbox", function () {
+         var toggleStub = sinon.stub (this.todoItem, 'sync');
+         createFixtureDiv (this.todoItemView. $ el);
+         this.todoItemView. $ el.find ( '. toggle'). click ();
+         this.todoItem.get ( 'completed'). should.to.be.true;
+         this.todoItem.sync.restore ();
+         removeFixtureDiv ();
+ }) 
+Because to communicate with users, so we have put all the browser DOM in $ el up, to do this we can create one hidden div to contain the DOM through createFixtureDiv function, the function as follows:
+ var createFixtureDiv = function (dom) {
+     $ ( '<Div>'). Attr ( "id", "fixture"). AppendTo ( "body");
+     $ ( '# Fixture'). Append (dom);
+ } 
+Then click on the checkbox and check completed toggle is set to true, finally removeFixtureDiv. Note that need to sync sub function of the model
+That is the important test case for the item view. Next we tested the app view view
+App that uses the DOM view hidden testem.html page, it can function as a filter 1, with 3 filters is All, Active and Completed.
+All the view of all items
+Active view only the items that have not been completed (completed attribute = false)
+Completed the contrary active
+This filter through the Backbone router (can understand basically the url through the browser hash changes) to execute the action, and since then execute trigger the corresponding event, leading to a change of the data collection, which in view of the corresponding item.
+Here's how to do perform tests rather complex series of events this
+First we need to create instances of the router:
+ the before (function () {
+     Workspace this.workspace = new ();
+     Backbone.history.start ();
+ }) 
+Todo app router defined in TODO_TEST files / js / routers / router.js
+After creating the entity we can start it to Backbone DISADV nge changes on hash url
+Our test case as follows:
+ it ( "test All, Active, Completed filter action", function (done) {
+         var stub = sinon.stub (this.collection, 'sync');
+                
+         this.appView. $ el.find ( '# todo-list li'). should.have.length (0);
+         this.collection.reset ([
+             {
+                     title: 'test 1',
+                     completed: false
+             },
+             {
+                     title: 'test 2',
+                     completed: false
+             },
+             {
+                     title: 'test 3',
+                     completed: true
+             }
+         ]);
+                
+         this.appView. $ el.find ( '# todo-list li'). should.have.length (3);
+                
+         $ ( '# Filters'). Find ( 'li: first'). Find ( 'a'). Attr ( 'class'). Should.equal ( 'selected');
+        
+         this.appView. $ el.find ( '# todo-list li.hidden'). should.have.length (0);
+                
+         var self = this;
+                
+         var completedFilterTest = function () {
+             self.appView. $ el.find ( '# todo-list li.hidden'). should.have.length (2);
+             self.appView. $ el.find ( '# todo-list li'). not ( '. hidden'). find ( 'label'). html (). should.equal ( 'test 3');
+                    
+             window.location.hash = '';
+                    
+             stub.restore ();
+             done ();
+         }
+                
+         var activeFilterTest = function () {
+             self.appView. $ el.find ( '# todo-list li.hidden'). should.have.length (1);
+             self.appView. $ el.find ( '# todo-list li.hidden'). find ( 'label'). html (). should.equal ( "test 3");                    
+             // Click the link completed
+             window.location.hash = '# / completed';
+                    
+             setTimeout (function () {
+                 completedFilterTest ();
+             }, 50);
+         }
+                
+         // Active link click
+                
+         window.location.hash = '# / active';
+                
+         setTimeout (function () {
+             activeFilterTest ();                 
+         }, 50)
+                
+ }) 
+First, we must set the collection of data for ViewApp, here we set 3 item, item 1, 2 unfinished, item 3 has completed the first thanh.Ban the default filter is All should we test must meet are 3 items display
+ this.appView. $ el.find ( '# todo-list li'). should.have.length (3);  this.appView. $ el.find ( '# todo-list li.hidden'). should.have.length (0);  // No items hidden 
+Next test to see if the filter is Active then display the correct 2 item not, for event trigger sequence as noted above, we do change the location by the hash:
+ window.location.hash = '# / active'; 
+need 1 small delay because the hash should temporarily delay moving one period then call activeFilterTest ()
+ setTimeout (function () {
+         activeFilterTest ();                 
+ }, 50) 
+In activeFilterTest we shall examine is one item are hidden and that is the test item 3 through:
+ self.appView. $ el.find ( '# todo-list li.hidden'). should.have.length (1);
+ self.appView. $ el.find ( '# todo-list li.hidden'). find ( 'label'). html (). should.equal ( "test 3"); 
+Then perform the same test Completed filter through completedFilterTest call ()
+It noted that in the test case definition:
+ it ( "test All, Active, Completed filter action", function (done) {... 
+then we pass the parameter done, this is the first callback function is defined by mocha
+Why do we need to use this function?
+Notice that in our test case using setTimeout, this is an asynchronous function if no parameters normally transmitted into the test case done by us after executing it will exit setTimeout bottom right without wait 50ms to perform communications functions inside setTimeout. So can understand how this is done in 1 marked for mocha understand that in our test case using bo.Neu functions such disagreements should be suitably mocha something to know that my test case ended (as if the implementation of such an asynchronous function, it will wait forever mocha without any indication that the end time), here we can see that the function is called at the end of the function done completedFilterTest, which is a marker the end of the test case.
+So we went through the main points of the writing test code
+And one very important part is that integrate with CI server testem
+Continuous Integration (CI) - Designed to work well with Cool CI servers like Jenkins or TeamCity
+Testem can work well with Jenkins, can refer here: https://github.com/airportyh/testem/blob/master/docs/use_with_jenkins.md
+Thus we have to learn about javascript unit test with Mocha + Testem, demo on 1 Backbone Application.Bai be written only view the main item, can view the demo source for more information.
+Results demo:
+Change the folder dir TODO_TEST
+Execute the command: testem
+Open the browser (here using chrome) and the link: http: // localhost: 7357 /
+
+
+By now we have a demo unit test writing with Backbone application, but we can take on any one javascript app running on a web browser or platform nodejs
+Finally wish all the comments!
